@@ -1,0 +1,9 @@
+<library path="lib/libtrajectory_preview_panel">
+  <class name="trajectory_preview/TrajectoryPreviewPanel"
+         type="trajectory_preview::TrajectoryPreviewPanel"
+         base_class_type="rviz::Panel">
+    <description>
+      A panel previewing robot trajectories
+    </description>
+  </class>
+</library>
