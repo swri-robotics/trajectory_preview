@@ -24,6 +24,7 @@ namespace trajectory_preview
 void TrajectoryPreviewPanel::onInitialize()
 {
   widget_ = new TrajectoryPreviewWidget();
+  widget_->initializeROS("/trajectory", "/trajectory_preview");
 
   // Add the widget to the panel layout
   QVBoxLayout* layout = new QVBoxLayout(this);
