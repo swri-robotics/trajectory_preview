@@ -21,7 +21,6 @@
 #include "robot_trajectory.h"
 #include <QObject>
 #include <ros/ros.h>
-#include <tesseract_msgs/Trajectory.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
 namespace {
@@ -55,7 +54,7 @@ public:
 
     traj_sub_ = nh.subscribe(input_traj_topic, 1,
                              &TrajectoryPreviewImpl::onNewTrajectory, this);
-    state_pub_ = nh.advertise<tesseract_msgs::TesseractState>(
+    state_pub_ = nh.advertise<sensor_msgs::JointState>(
         output_state_topic, 1, true);
     timer_ = nh.createTimer(ros::Rate(target_fps),
                             &TrajectoryPreviewImpl::onAnimateCallback, this,
@@ -110,11 +109,10 @@ public:
     if (!display_traj_)
       return;
 
-    tesseract_msgs::TesseractState state_msg;
-    //    state_msg.is_diff = true;
+    sensor_msgs::JointState state_msg;
 
     // Compute the interpolated state
-    display_traj_->getStateAtDurationFromStart(t, state_msg.joint_state);
+    display_traj_->getStateAtDurationFromStart(t, state_msg);
 
     // Display
     state_pub_.publish(state_msg);

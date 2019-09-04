@@ -7,7 +7,6 @@ find_package(catkin REQUIRED COMPONENTS
   rviz
   sensor_msgs
   trajectory_msgs
-  tesseract_msgs
 )
 
 find_package(Qt5 REQUIRED COMPONENTS
@@ -25,7 +24,6 @@ catkin_package(
     rviz
     sensor_msgs
     trajectory_msgs
-    tesseract_msgs
 )
 
 ###########
