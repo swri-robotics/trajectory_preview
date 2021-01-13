@@ -21,18 +21,20 @@
 #include <QWidget>
 #include <trajectory_msgs/JointTrajectory.h>
 
-namespace Ui {
+namespace Ui
+{
 class TrajectoryPreview;
 }
 
-namespace trajectory_preview {
-
+namespace trajectory_preview
+{
 class TrajectoryPreviewImpl;
 
-class TrajectoryPreviewWidget : public QWidget {
+class TrajectoryPreviewWidget : public QWidget
+{
   Q_OBJECT
 public:
-  TrajectoryPreviewWidget(QWidget *parent = 0);
+  TrajectoryPreviewWidget(QWidget* parent = 0);
   ~TrajectoryPreviewWidget();
 
   /**
@@ -41,8 +43,7 @@ public:
    * @param input_traj_topic
    * @param output_state_topic
    */
-  void initializeROS(const std::string &input_traj_topic,
-                     const std::string &output_state_topic);
+  void initializeROS(const std::string& input_traj_topic, const std::string& output_state_topic);
 
   /**
    * @brief Programmatically sets the displayed trajectory (rather than waiting
@@ -50,7 +51,7 @@ public:
    * be published)
    * @param trajectory
    */
-  void setTrajectory(const trajectory_msgs::JointTrajectory &trajectory);
+  void setTrajectory(const trajectory_msgs::JointTrajectory& trajectory);
 
 protected Q_SLOTS:
   // User Interactions
@@ -64,12 +65,12 @@ protected Q_SLOTS:
   void onUpdate(double ratio);
 
 private:
-  TrajectoryPreviewImpl *impl_;
-  Ui::TrajectoryPreview *ui_;
+  TrajectoryPreviewImpl* impl_;
+  Ui::TrajectoryPreview* ui_;
 
   int num_ticks_;
 };
 
-} // namespace trajectory_preview
+}  // namespace trajectory_preview
 
-#endif // TRAJECTORY_PREVIEW_TRAJECTORY_PREVIEW_WIDGET_H
+#endif  // TRAJECTORY_PREVIEW_TRAJECTORY_PREVIEW_WIDGET_H

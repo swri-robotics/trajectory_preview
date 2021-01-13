@@ -20,10 +20,12 @@
 
 #include <rviz/panel.h>
 
-namespace trajectory_preview {
+namespace trajectory_preview
+{
 class TrajectoryPreviewWidget;
 
-class TrajectoryPreviewPanel : public rviz::Panel {
+class TrajectoryPreviewPanel : public rviz::Panel
+{
   Q_OBJECT
 public:
   using rviz::Panel::Panel;
@@ -31,9 +33,9 @@ public:
   void onInitialize() override;
 
 private:
-  TrajectoryPreviewWidget *widget_;
+  TrajectoryPreviewWidget* widget_;
 };
 
-} // namespace trajectory_preview
+}  // namespace trajectory_preview
 
-#endif // TRAJECTORY_PREVIEW_PANEL_H
+#endif  // TRAJECTORY_PREVIEW_PANEL_H

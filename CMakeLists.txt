@@ -9,10 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   trajectory_msgs
 )
 
-find_package(Qt5 REQUIRED COMPONENTS
-  Core
-  Widgets
-)
+find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
 catkin_package(
   INCLUDE_DIRS

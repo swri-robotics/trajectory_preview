@@ -19,18 +19,20 @@
 #include "trajectory_preview/trajectory_preview_widget.h"
 #include <QVBoxLayout>
 
-namespace trajectory_preview {
-void TrajectoryPreviewPanel::onInitialize() {
+namespace trajectory_preview
+{
+void TrajectoryPreviewPanel::onInitialize()
+{
   widget_ = new TrajectoryPreviewWidget();
   widget_->initializeROS("/trajectory", "/trajectory_preview");
 
   // Add the widget to the panel layout
-  QVBoxLayout *layout = new QVBoxLayout(this);
+  QVBoxLayout* layout = new QVBoxLayout(this);
   layout->addWidget(widget_);
   setLayout(layout);
 }
 
-} // namespace trajectory_preview
+}  // namespace trajectory_preview
 
 #include <pluginlib/class_list_macros.h>
 PLUGINLIB_EXPORT_CLASS(trajectory_preview::TrajectoryPreviewPanel, rviz::Panel)

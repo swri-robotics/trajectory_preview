@@ -42,31 +42,31 @@
 #include <sensor_msgs/JointState.h>
 #include <trajectory_msgs/JointTrajectory.h>
 
-namespace trajectory_preview {
-
-class RobotTrajectory {
+namespace trajectory_preview
+{
+class RobotTrajectory
+{
 public:
-  RobotTrajectory(const trajectory_msgs::JointTrajectory &trajectory)
-      : trajectory_(trajectory) {
+  RobotTrajectory(const trajectory_msgs::JointTrajectory& trajectory) : trajectory_(trajectory)
+  {
     ros::Time last_time_stamp = trajectory_.header.stamp;
     ros::Time this_time_stamp = last_time_stamp;
 
-    for (std::size_t i = 0; i < trajectory_.points.size(); ++i) {
-      this_time_stamp =
-          trajectory_.header.stamp + trajectory_.points[i].time_from_start;
+    for (std::size_t i = 0; i < trajectory_.points.size(); ++i)
+    {
+      this_time_stamp = trajectory_.header.stamp + trajectory_.points[i].time_from_start;
 
       waypoints_.push_back(trajectory_.points[i]);
-      duration_from_previous_.push_back(
-          (this_time_stamp - last_time_stamp).toSec());
+      duration_from_previous_.push_back((this_time_stamp - last_time_stamp).toSec());
 
       last_time_stamp = this_time_stamp;
     }
   }
 
-  void findWayPointIndicesForDurationAfterStart(const double &duration,
-                                                int &before, int &after,
-                                                double &blend) const {
-    if (duration < 0.0) {
+  void findWayPointIndicesForDurationAfterStart(const double& duration, int& before, int& after, double& blend) const
+  {
+    if (duration < 0.0)
+    {
       before = 0;
       after = 0;
       blend = 0;
@@ -76,7 +76,8 @@ public:
     // Find indicies
     std::size_t index = 0, num_points = waypoints_.size();
     double running_duration = 0.0;
-    for (; index < num_points; ++index) {
+    for (; index < num_points; ++index)
+    {
       running_duration += duration_from_previous_[index];
       if (running_duration >= duration)
         break;
@@ -86,16 +87,18 @@ public:
 
     // Compute duration blend
     double before_time = running_duration - duration_from_previous_[index];
-    if (after == before) {
+    if (after == before)
+    {
       blend = 1.0;
-    } else {
+    }
+    else
+    {
       blend = (duration - before_time) / duration_from_previous_[index];
     }
   }
 
-  bool
-  getStateAtDurationFromStart(const double request_duration,
-                              sensor_msgs::JointState &output_state) const {
+  bool getStateAtDurationFromStart(const double request_duration, sensor_msgs::JointState& output_state) const
+  {
     // If there are no waypoints we can't do anything
     if (waypoints_.empty())
       return false;
@@ -103,8 +106,7 @@ public:
     int before = 0;
     int after = 0;
     double blend = 1.0;
-    findWayPointIndicesForDurationAfterStart(request_duration, before, after,
-                                             blend);
+    findWayPointIndicesForDurationAfterStart(request_duration, before, after, blend);
 
     //    ROS_INFO("Interpolating %.3f of the way between index %d and %d.",
     //    blend, before, after);
@@ -114,7 +116,8 @@ public:
     return true;
   }
 
-  double getWayPointDurationFromStart(std::size_t index) const {
+  double getWayPointDurationFromStart(std::size_t index) const
+  {
     if (duration_from_previous_.empty())
       return 0.0;
     if (index >= duration_from_previous_.size())
@@ -126,20 +129,22 @@ public:
     return time;
   }
 
-  std::size_t getWayPointCount() const { return waypoints_.size(); }
+  std::size_t getWayPointCount() const
+  {
+    return waypoints_.size();
+  }
 
 private:
-  sensor_msgs::JointState
-  interpolate(const trajectory_msgs::JointTrajectoryPoint &start,
-              const trajectory_msgs::JointTrajectoryPoint &end,
-              const double t) const {
+  sensor_msgs::JointState interpolate(const trajectory_msgs::JointTrajectoryPoint& start,
+                                      const trajectory_msgs::JointTrajectoryPoint& end, const double t) const
+  {
     sensor_msgs::JointState out;
     out.name = trajectory_.joint_names;
     out.position.resize(out.name.size());
 
-    for (std::size_t i = 0; i < out.name.size(); ++i) {
-      out.position[i] =
-          start.positions[i] + (end.positions[i] - start.positions[i]) * t;
+    for (std::size_t i = 0; i < out.name.size(); ++i)
+    {
+      out.position[i] = start.positions[i] + (end.positions[i] - start.positions[i]) * t;
     }
 
     return out;
@@ -153,6 +158,6 @@ private:
 };
 typedef typename std::shared_ptr<RobotTrajectory> RobotTrajectoryPtr;
 
-} // namespace trajectory_preview
+}  // namespace trajectory_preview
 
-#endif // TRAJECTORY_PREVIEW_ROBOT_TRAJECTORY_H
+#endif  // TRAJECTORY_PREVIEW_ROBOT_TRAJECTORY_H
