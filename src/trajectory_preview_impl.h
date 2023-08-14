@@ -20,8 +20,11 @@
 
 #include "robot_trajectory.h"
 #include <QObject>
-#include <ros/ros.h>
-#include <trajectory_msgs/JointTrajectory.h>
+#include <rclcpp/node.hpp>
+#include <rclcpp/subscription.hpp>
+#include <rclcpp/publisher.hpp>
+#include <rclcpp/timer.hpp>
+#include <trajectory_msgs/msg/joint_trajectory.hpp>
 
 namespace
 {
@@ -31,7 +34,7 @@ double trajectoryDuration(const trajectory_preview::RobotTrajectory& traj)
   return traj.getWayPointDurationFromStart(traj.getWayPointCount() - 1);
 }
 
-const static double target_fps = 15.0;
+const static double timer_period = 1.0 / 30.0;
 
 }  // namespace
 
@@ -45,24 +48,16 @@ public:
   {
   }
 
-  void initialize(const std::string& input_traj_topic, const std::string& output_state_topic)
+  void initialize(rclcpp::Node::SharedPtr node, const std::string& input_traj_topic,
+                  const std::string& output_state_topic)
   {
-    ros::NodeHandle nh;
-
-    std::string urdf_xml_string, srdf_xml_string;
-    if (!nh.getParam("robot_description", urdf_xml_string) ||
-        !nh.getParam("robot_description_semantic", srdf_xml_string))
-    {
-      ROS_ERROR_STREAM("Failed to get URDF and/or SRDF");
-      return;
-    }
-
-    traj_sub_ = nh.subscribe(input_traj_topic, 1, &TrajectoryPreviewImpl::onNewTrajectory, this);
-    state_pub_ = nh.advertise<sensor_msgs::JointState>(output_state_topic, 1, true);
-    timer_ = nh.createTimer(ros::Rate(target_fps), &TrajectoryPreviewImpl::onAnimateCallback, this, false, false);
+    node_ = node;
+    traj_sub_ = node_->create_subscription<trajectory_msgs::msg::JointTrajectory>(
+        input_traj_topic, 1, std::bind(&TrajectoryPreviewImpl::onNewTrajectory, this, std::placeholders::_1));
+    state_pub_ = node_->create_publisher<sensor_msgs::msg::JointState>(output_state_topic, rclcpp::SystemDefaultsQoS());
   }
 
-  void onNewTrajectory(const trajectory_msgs::JointTrajectoryConstPtr& msg)
+  void onNewTrajectory(const trajectory_msgs::msg::JointTrajectory::SharedPtr msg)
   {
     stopDisplay();
 
@@ -80,19 +75,13 @@ public:
     startDisplay();
   }
 
-  void onAnimateCallback(const ros::TimerEvent& e)
+  void onAnimateCallback()
   {
     if (!display_traj_)
       return;
 
-    auto step = (e.current_real - e.last_real).toSec() * scale_;
-    if (e.last_real == ros::Time())  // Last time is zero if the timer gets restarted
-    {
-      step = 0;
-    }
-
     // compute current time
-    current_time_ = current_time_ + step;
+    current_time_ = current_time_ + (timer_period * scale_);
 
     if (current_time_ < trajectory_duration_)
     {
@@ -115,13 +104,14 @@ public:
     if (!display_traj_)
       return;
 
-    sensor_msgs::JointState state_msg;
+    sensor_msgs::msg::JointState state_msg;
 
     // Compute the interpolated state
     display_traj_->getStateAtDurationFromStart(t, state_msg);
 
     // Display
-    state_pub_.publish(state_msg);
+    state_pub_->publish(state_msg);
+    emit update(t / trajectory_duration_);
   }
 
   void startDisplay()
@@ -134,17 +124,26 @@ public:
       // reset timer
       current_time_ = 0.0;
     }
-    timer_.start();
+
+    // Start the timer
+    timer_ = node_->create_wall_timer(std::chrono::milliseconds(long((timer_period / scale_) * 1000.0)),
+                                      std::bind(&TrajectoryPreviewImpl::onAnimateCallback, this));
   }
 
   void stopDisplay()
   {
-    timer_.stop();
+    if (timer_)
+      timer_->cancel();
   }
 
   void setScale(double new_scale)
   {
     scale_ = new_scale;
+    if (timer_)
+    {
+      timer_->cancel();
+      startDisplay();
+    }
   }
 
   void setCurrentTime(int index, int num_indexes)
@@ -168,9 +167,10 @@ Q_SIGNALS:
   void update(double ratio);
 
 private:
-  ros::Subscriber traj_sub_;
-  ros::Publisher state_pub_;
-  ros::Timer timer_;
+  rclcpp::Node::SharedPtr node_;
+  rclcpp::Subscription<trajectory_msgs::msg::JointTrajectory>::SharedPtr traj_sub_;
+  rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr state_pub_;
+  rclcpp::TimerBase::SharedPtr timer_;
 
   double trajectory_duration_;
   double current_time_;

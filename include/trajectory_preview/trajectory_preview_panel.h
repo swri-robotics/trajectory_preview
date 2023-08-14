@@ -18,17 +18,17 @@
 #ifndef TRAJECTORY_PREVIEW_PANEL_H
 #define TRAJECTORY_PREVIEW_PANEL_H
 
-#include <rviz/panel.h>
+#include <rviz_common/panel.hpp>
 
 namespace trajectory_preview
 {
 class TrajectoryPreviewWidget;
 
-class TrajectoryPreviewPanel : public rviz::Panel
+class TrajectoryPreviewPanel : public rviz_common::Panel
 {
   Q_OBJECT
 public:
-  using rviz::Panel::Panel;
+  using rviz_common::Panel::Panel;
 
   void onInitialize() override;
 
