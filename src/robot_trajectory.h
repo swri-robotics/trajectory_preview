@@ -38,26 +38,26 @@
 #define TRAJECTORY_PREVIEW_ROBOT_TRAJECTORY_H
 
 #include <deque>
-#include <ros/console.h>
-#include <sensor_msgs/JointState.h>
-#include <trajectory_msgs/JointTrajectory.h>
+#include <rclcpp/time.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
+#include <trajectory_msgs/msg/joint_trajectory.hpp>
 
 namespace trajectory_preview
 {
 class RobotTrajectory
 {
 public:
-  RobotTrajectory(const trajectory_msgs::JointTrajectory& trajectory) : trajectory_(trajectory)
+  RobotTrajectory(const trajectory_msgs::msg::JointTrajectory& trajectory) : trajectory_(trajectory)
   {
-    ros::Time last_time_stamp = trajectory_.header.stamp;
-    ros::Time this_time_stamp = last_time_stamp;
+    rclcpp::Time last_time_stamp = trajectory_.header.stamp;
+    rclcpp::Time this_time_stamp = last_time_stamp;
 
     for (std::size_t i = 0; i < trajectory_.points.size(); ++i)
     {
-      this_time_stamp = trajectory_.header.stamp + trajectory_.points[i].time_from_start;
+      this_time_stamp = rclcpp::Time(trajectory_.header.stamp) + rclcpp::Duration(trajectory_.points[i].time_from_start);
 
       waypoints_.push_back(trajectory_.points[i]);
-      duration_from_previous_.push_back((this_time_stamp - last_time_stamp).toSec());
+      duration_from_previous_.push_back((this_time_stamp - last_time_stamp).seconds());
 
       last_time_stamp = this_time_stamp;
     }
@@ -97,7 +97,7 @@ public:
     }
   }
 
-  bool getStateAtDurationFromStart(const double request_duration, sensor_msgs::JointState& output_state) const
+  bool getStateAtDurationFromStart(const double request_duration, sensor_msgs::msg::JointState& output_state) const
   {
     // If there are no waypoints we can't do anything
     if (waypoints_.empty())
@@ -107,9 +107,6 @@ public:
     int after = 0;
     double blend = 1.0;
     findWayPointIndicesForDurationAfterStart(request_duration, before, after, blend);
-
-    //    ROS_INFO("Interpolating %.3f of the way between index %d and %d.",
-    //    blend, before, after);
 
     output_state = interpolate(waypoints_[before], waypoints_[after], blend);
 
@@ -135,10 +132,10 @@ public:
   }
 
 private:
-  sensor_msgs::JointState interpolate(const trajectory_msgs::JointTrajectoryPoint& start,
-                                      const trajectory_msgs::JointTrajectoryPoint& end, const double t) const
+  sensor_msgs::msg::JointState interpolate(const trajectory_msgs::msg::JointTrajectoryPoint& start,
+                                      const trajectory_msgs::msg::JointTrajectoryPoint& end, const double t) const
   {
-    sensor_msgs::JointState out;
+    sensor_msgs::msg::JointState out;
     out.name = trajectory_.joint_names;
     out.position.resize(out.name.size());
 
@@ -150,9 +147,9 @@ private:
     return out;
   }
 
-  trajectory_msgs::JointTrajectory trajectory_;
+  trajectory_msgs::msg::JointTrajectory trajectory_;
 
-  std::deque<trajectory_msgs::JointTrajectoryPoint> waypoints_;
+  std::deque<trajectory_msgs::msg::JointTrajectoryPoint> waypoints_;
 
   std::deque<double> duration_from_previous_;
 };

@@ -19,7 +19,8 @@
 #define TRAJECTORY_PREVIEW_TRAJECTORY_PREVIEW_WIDGET_H
 
 #include <QWidget>
-#include <trajectory_msgs/JointTrajectory.h>
+#include <trajectory_msgs/msg/joint_trajectory.hpp>
+#include <rclcpp/node.hpp>
 
 namespace Ui
 {
@@ -43,15 +44,7 @@ public:
    * @param input_traj_topic
    * @param output_state_topic
    */
-  void initializeROS(const std::string& input_traj_topic, const std::string& output_state_topic);
-
-  /**
-   * @brief Programmatically sets the displayed trajectory (rather than waiting
-   * for one to
-   * be published)
-   * @param trajectory
-   */
-  void setTrajectory(const trajectory_msgs::JointTrajectory& trajectory);
+  void initializeROS(rclcpp::Node::SharedPtr node, const std::string& input_traj_topic, const std::string& output_state_topic);
 
 protected Q_SLOTS:
   // User Interactions

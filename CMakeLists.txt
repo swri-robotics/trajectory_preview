@@ -1,38 +1,25 @@
-cmake_minimum_required(VERSION 2.8.3)
+cmake_minimum_required(VERSION 3.5.0)
 project(trajectory_preview)
 
-add_compile_options(-std=c++11)
-
-find_package(catkin REQUIRED COMPONENTS
-  rviz
-  sensor_msgs
-  trajectory_msgs
-)
+add_compile_options(-std=c++14)
 
 find_package(Qt5 REQUIRED COMPONENTS Widgets)
 
-catkin_package(
-  INCLUDE_DIRS
-    include
-  LIBRARIES
-    ${PROJECT_NAME}_widget
-    ${PROJECT_NAME}_panel
-  CATKIN_DEPENDS
-    rviz
-    sensor_msgs
-    trajectory_msgs
+set(ROS2_DEPS
+  rviz_common
+  sensor_msgs
+  trajectory_msgs
+  pluginlib
 )
+
+find_package(ament_cmake REQUIRED)
+foreach(dep ${ROS2_DEPS})
+  find_package(${dep} REQUIRED)
+endforeach()
 
 ###########
 ## Build ##
 ###########
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}
-)
-
 qt5_wrap_ui(UI_MOC
   ui/trajectory_preview_widget.ui
 )
@@ -47,23 +34,29 @@ qt5_wrap_cpp(PANEL_MOC
 )
 
 # Widget Library
-add_library(${PROJECT_NAME}_widget
+add_library(${PROJECT_NAME}_widget SHARED
   src/trajectory_preview_widget.cpp
   ${UI_MOC}
   ${WIDGET_MOC}
 )
+target_include_directories(${PROJECT_NAME}_widget PUBLIC
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+  "$<INSTALL_INTERFACE:include>"
+)
+target_include_directories(${PROJECT_NAME}_widget PRIVATE
+  "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+)
 target_link_libraries(${PROJECT_NAME}_widget
-  ${catkin_LIBRARIES}
   Qt5::Widgets
 )
+ament_target_dependencies(${PROJECT_NAME}_widget ${ROS2_DEPS})
 
 # Panel Library
-add_library(${PROJECT_NAME}_panel
+add_library(${PROJECT_NAME}_panel SHARED
   src/trajectory_preview_panel.cpp
   ${PANEL_MOC}
 )
 target_link_libraries(${PROJECT_NAME}_panel
-  ${catkin_LIBRARIES}
   Qt5::Widgets
   ${PROJECT_NAME}_widget
 )
@@ -72,20 +65,20 @@ target_link_libraries(${PROJECT_NAME}_panel
 ## Install ##
 #############
 
-install(
-  TARGETS
-    ${PROJECT_NAME}_widget
-    ${PROJECT_NAME}_panel
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-)
+# Install the headers
+install(DIRECTORY include/${PROJECT_NAME} DESTINATION include)
 
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-)
+# Install the library(ies)
+install(TARGETS ${PROJECT_NAME}_widget ${PROJECT_NAME}_panel
+        EXPORT ${PROJECT_NAME}-targets DESTINATION lib)
 
 install(FILES
   plugin_description.xml
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+  DESTINATION share/${PROJECT_NAME}
 )
+
+pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
+
+ament_export_targets(${PROJECT_NAME}-targets HAS_LIBRARY_TARGET)
+ament_export_dependencies(${ROS2_DEPS})
+ament_package()

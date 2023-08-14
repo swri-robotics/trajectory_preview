@@ -17,14 +17,26 @@
  */
 #include "trajectory_preview/trajectory_preview_panel.h"
 #include "trajectory_preview/trajectory_preview_widget.h"
+
 #include <QVBoxLayout>
+#include <rviz_common/display_context.hpp>
+#include <rclcpp/node.hpp>
 
 namespace trajectory_preview
 {
 void TrajectoryPreviewPanel::onInitialize()
 {
+  auto node = getDisplayContext()->getRosNodeAbstraction().lock()->get_raw_node();
+
+  // Declare and get the input trajectory
+  node->declare_parameter<std::string>("trajectory_topic", "trajectory");
+  auto input_topic = node->get_parameter("trajectory_topic").get_value<std::string>();
+
+  node->declare_parameter<std::string>("display_topic", "trajectory/joint_states");
+  auto output_topic = node->get_parameter("display_topic").get_value<std::string>();
+
   widget_ = new TrajectoryPreviewWidget();
-  widget_->initializeROS("/trajectory", "/trajectory_preview");
+  widget_->initializeROS(node, input_topic, output_topic);
 
   // Add the widget to the panel layout
   QVBoxLayout* layout = new QVBoxLayout(this);
@@ -34,5 +46,5 @@ void TrajectoryPreviewPanel::onInitialize()
 
 }  // namespace trajectory_preview
 
-#include <pluginlib/class_list_macros.h>
-PLUGINLIB_EXPORT_CLASS(trajectory_preview::TrajectoryPreviewPanel, rviz::Panel)
+#include <pluginlib/class_list_macros.hpp>
+PLUGINLIB_EXPORT_CLASS(trajectory_preview::TrajectoryPreviewPanel, rviz_common::Panel)

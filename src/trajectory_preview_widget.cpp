@@ -29,15 +29,15 @@ TrajectoryPreviewWidget::TrajectoryPreviewWidget(QWidget* parent) : QWidget(pare
   num_ticks_ = ui_->timeSlider->maximum() - ui_->timeSlider->minimum();
 
   // QT Events
-  connect(ui_->playButton, SIGNAL(clicked()), this, SLOT(onPlayPauseButton()));
-  connect(ui_->scaleSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onScaleChanged(double)));
-  connect(ui_->timeSlider, SIGNAL(sliderMoved(int)), this, SLOT(onSliderChanged(int)));
+  connect(ui_->playButton, &QPushButton::clicked, this, &TrajectoryPreviewWidget::onPlayPauseButton);
+  connect(ui_->scaleSpinBox, QOverload<double>::of(&QDoubleSpinBox::valueChanged), this, &TrajectoryPreviewWidget::onScaleChanged);
+  connect(ui_->timeSlider, &QSlider::sliderMoved, this, &TrajectoryPreviewWidget::onSliderChanged);
 
   // Create ROS stuff
   impl_ = new TrajectoryPreviewImpl();
-  connect(impl_, SIGNAL(newTrajectory(double)), this, SLOT(onNewTrajectory(double)));
-  connect(impl_, SIGNAL(update(double)), this, SLOT(onUpdate(double)));
-  connect(impl_, SIGNAL(trajectoryFinished()), this, SLOT(onTrajectoryFinished()));
+  connect(impl_, &TrajectoryPreviewImpl::newTrajectory, this, &TrajectoryPreviewWidget::onNewTrajectory);
+  connect(impl_, &TrajectoryPreviewImpl::update, this, &TrajectoryPreviewWidget::onUpdate);
+  connect(impl_, &TrajectoryPreviewImpl::trajectoryFinished, this, &TrajectoryPreviewWidget::onTrajectoryFinished);
 }
 
 TrajectoryPreviewWidget::~TrajectoryPreviewWidget()
@@ -62,6 +62,7 @@ void TrajectoryPreviewWidget::onPlayPauseButton()
 void TrajectoryPreviewWidget::onScaleChanged(double new_scale)
 {
   impl_->setScale(new_scale);
+  ui_->playButton->setChecked(true);
 }
 
 void TrajectoryPreviewWidget::onSliderChanged(int new_position)
@@ -74,7 +75,7 @@ void TrajectoryPreviewWidget::onNewTrajectory(double total_duration)
   ui_->timeSlider->setValue(ui_->timeSlider->minimum());
   ui_->playButton->setChecked(true);
   ui_->playButton->setText(tr("Pause"));
-  ui_->totalLabel->setText(QString::number(total_duration, 'g', 4));
+  ui_->totalLabel->setText(QString::number(total_duration, 'f', 2));
 }
 
 void TrajectoryPreviewWidget::onTrajectoryFinished()
@@ -87,17 +88,12 @@ void TrajectoryPreviewWidget::onUpdate(double ratio)
 {
   int tick = static_cast<int>(ratio * num_ticks_ + 0.5);
   ui_->timeSlider->setValue(tick);
-  ui_->currentLabel->setText(QString::number(ratio * impl_->currentTrajectoryDuration(), 'g', 4));
+  ui_->currentLabel->setText(QString::number(ratio * impl_->currentTrajectoryDuration(), 'f', 2));
 }
 
-void TrajectoryPreviewWidget::initializeROS(const std::string& input_traj_topic, const std::string& output_state_topic)
+void TrajectoryPreviewWidget::initializeROS(rclcpp::Node::SharedPtr node, const std::string& input_traj_topic, const std::string& output_state_topic)
 {
-  impl_->initialize(input_traj_topic, output_state_topic);
-}
-
-void TrajectoryPreviewWidget::setTrajectory(const trajectory_msgs::JointTrajectory& trajectory)
-{
-  impl_->onNewTrajectory(boost::make_shared<trajectory_msgs::JointTrajectory>(trajectory));
+  impl_->initialize(node, input_traj_topic, output_state_topic);
 }
 
 }  // namespace trajectory_preview
