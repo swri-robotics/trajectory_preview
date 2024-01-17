@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>trajectory_preview</name>
-  <version>0.0.0</version>
+  <version>1.0.0</version>
   <description>The trajectory_preview package</description>
 
   <author email="mripperger@swri.org">Michael Ripperger</author>

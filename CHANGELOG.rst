@@ -2,8 +2,8 @@
 Changelog for package trajectory_preview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.0.0 (2024-01-17)
+------------------
 * Added license
 * Merge pull request #6 from marip8/update/ci-ros1
   Run CI on merge to ros** branch
