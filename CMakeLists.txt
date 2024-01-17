@@ -77,6 +77,8 @@ install(FILES
   DESTINATION share/${PROJECT_NAME}
 )
 
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+
 pluginlib_export_plugin_description_file(rviz_common plugin_description.xml)
 
 ament_export_targets(${PROJECT_NAME}-targets HAS_LIBRARY_TARGET)
