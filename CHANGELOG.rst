@@ -2,8 +2,8 @@
 Changelog for package trajectory_preview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.0.0 (2024-01-17)
+------------------
 * Set package.xml version equal to ROS1 version
 * Added license
 * Merge pull request #5 from marip8/update/ci
