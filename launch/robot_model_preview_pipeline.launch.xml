@@ -1,18 +1,18 @@
 <?xml version="1.0."?>
 <launch>
-  <arg name="root_frame" doc="Root frame of the nominal TF tree, at which to connect the preview TF tree" />
-  <arg name="prefix" default="preview"/>
+  <arg name="robot_description" description="Robot description string" />
+  <arg name="root_frame" description="Root frame of the nominal TF tree, at which to connect the preview TF tree" />
+  <arg name="preview_joint_states_topic" default="/preview"/>
 
-  <node pkg="joint_state_publisher" type="joint_state_publisher" name="$(arg prefix)_joint_state_publisher">
-    <remap from="joint_states" to="$(arg prefix)/joint_states"/>
-    <rosparam param="source_list">[trajectory/joint_states]</rosparam>
+  <node pkg="joint_state_publisher" exec="joint_state_publisher" namespace="preview">
+    <param name="source_list" value="[$(var preview_joint_states_topic)]"/>
   </node>
 
-  <node pkg="robot_state_publisher" type="robot_state_publisher" name="$(arg prefix)_robot_state_publisher">
-    <remap from="joint_states" to="$(arg prefix)/joint_states"/>
-    <param name="tf_prefix" value="$(arg prefix)"/>
+  <node pkg="robot_state_publisher" exec="robot_state_publisher" namespace="preview">
+    <param name="robot_description" value="$(var robot_description)"/>
+    <param name="frame_prefix" value="preview/"/>
   </node>
 
-  <node pkg="tf2_ros" type="static_transform_publisher" args="0 0 0 0 0 0 $(arg root_frame) preview/$(arg root_frame)" name="$(arg prefix)_static_tf2_pub"/>
+  <node pkg="tf2_ros" exec="static_transform_publisher" args="0 0 0 0 0 0 $(var root_frame) preview/$(var root_frame)" namespace="preview"/>
 
 </launch>
