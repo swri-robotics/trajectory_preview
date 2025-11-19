@@ -2,6 +2,12 @@
 Changelog for package trajectory_preview
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Updated CI to drop support for Foxy, add support for Jazzy
+* Updated preview pipeline launch file to expect robot description parameter as string to handle case of colon characters in URDF
+* Contributors: Michael Ripperger
+
 2.0.0 (2024-01-17)
 ------------------
 * Set package.xml version equal to ROS1 version
