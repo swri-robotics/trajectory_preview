@@ -19,7 +19,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        distro: [foxy, humble, rolling]
+        distro: [humble, jazzy, rolling]
     container:
       image: ros:${{ matrix.distro }}
       env:
@@ -33,7 +33,7 @@ jobs:
           path: target_ws/src
 
       - name: Build and Tests
-        uses: tesseract-robotics/colcon-action@v6
+        uses: tesseract-robotics/colcon-action@v13
         with:
           before-script: source /opt/ros/${{ matrix.distro }}/setup.bash
           ccache-prefix: ${{ matrix.distro }}
