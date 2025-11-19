@@ -9,7 +9,7 @@
   </node>
 
   <node pkg="robot_state_publisher" exec="robot_state_publisher" namespace="preview">
-    <param name="robot_description" value="$(var robot_description)"/>
+    <param name="robot_description" value="$(var robot_description)" type="str"/>
     <param name="frame_prefix" value="preview/"/>
   </node>
 
